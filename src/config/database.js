@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 process.env.MONGODB_URI =
-  'mongodb+srv://phuson2809:28092001@cloudonline.xmpyt4e.mongodb.net/';
+  'mongodb+srv://phuson2809:28092001@cloudonline.xmpyt4e.mongodb.net/thethaoplus';
 
 const connectDatabase = () => {
   try {
