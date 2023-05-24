@@ -1,0 +1,45 @@
+const express = require('express');
+const bodyParser = require('body-parser');
+
+const { authMiddleware, isOwner } = require('../middlewares/authMiddleware');
+const {
+  createSportCenter,
+  getAllSportCenters,
+  getSportCenter,
+  updateSportCenter,
+  blockSportCenter,
+  unBlockSportCenter,
+  deleteSportCenter,
+  getSportFieldListByID,
+} = require('../controllers/sportCenterController');
+
+const sportCenterRouter = express.Router();
+
+sportCenterRouter.use(bodyParser.json());
+
+sportCenterRouter.route('/').post(authMiddleware, isOwner, createSportCenter);
+
+sportCenterRouter.route('/').get(authMiddleware, getAllSportCenters);
+
+sportCenterRouter
+  .route('/get-sport-field-list/:sportCenterId')
+  .get(authMiddleware, getSportFieldListByID);
+
+sportCenterRouter
+  .route('/:id')
+  .get(authMiddleware, getSportCenter)
+  .put(authMiddleware, isOwner, updateSportCenter);
+
+sportCenterRouter
+  .route('/:id/:sportId')
+  .delete(authMiddleware, isOwner, deleteSportCenter);
+
+sportCenterRouter
+  .route('/block-sport-center/:id')
+  .put(authMiddleware, isOwner, blockSportCenter);
+
+sportCenterRouter
+  .route('/unblock-sport-center/:id')
+  .put(authMiddleware, isOwner, unBlockSportCenter);
+
+module.exports = sportCenterRouter;
