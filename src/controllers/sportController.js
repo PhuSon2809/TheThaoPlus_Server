@@ -5,11 +5,14 @@ const Users = require('../models/userModel');
 const createSport = asyncHandler(async (req, res) => {
   /* 
     #swagger.tags = ['Sport']
-    #swagger.description = Create new sport - { "name": "football" }
+    #swagger.description = Create new sport - { "name": "football", image: "" }
   */
-  const { name } = req.body;
+  const imageDefault =
+    'https://firebasestorage.googleapis.com/v0/b/thethaoplus-4d4e2.appspot.com/o/sport.png?alt=media&token=2d2c6703-5121-4242-9841-3b41fa9eaba1';
+  const { image, name } = req.body;
+  const newSportBody = { image: image ? image : imageDefault, name: name };
   try {
-    const newSport = await Sports.create(req.body);
+    const newSport = await Sports.create(newSportBody);
     res.status(201).json({
       status: 201,
       message: 'Sport created successfully.',
@@ -62,7 +65,7 @@ const getSport = asyncHandler(async (req, res) => {
 const updateSport = asyncHandler(async (req, res) => {
   /* 
     #swagger.tags = ['Sport']
-    #swagger.description = Update sport by ID - { "name": "football" }
+    #swagger.description = Update sport by ID - { "name": "football", image: "" }
   */
   const { id } = req.params;
   let isValid = await Sports.findById(id);
@@ -70,9 +73,12 @@ const updateSport = asyncHandler(async (req, res) => {
     throw new Error('Sport id is not valid or not found');
   }
 
-  const { name } = req.body;
+  const imageDefault =
+    'https://firebasestorage.googleapis.com/v0/b/thethaoplus-4d4e2.appspot.com/o/sport.png?alt=media&token=2d2c6703-5121-4242-9841-3b41fa9eaba1';
+  const { image, name } = req.body;
+  const newSportBody = { image: image ? image : imageDefault, name: name };
   try {
-    const updateSport = await Sports.findByIdAndUpdate(id, req.body, {
+    const updateSport = await Sports.findByIdAndUpdate(id, newSportBody, {
       new: true,
     });
     res.status(200).json({

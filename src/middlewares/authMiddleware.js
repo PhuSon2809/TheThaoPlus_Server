@@ -41,4 +41,14 @@ const isOwner = asyncHandler(async (req, res, next) => {
   }
 });
 
-module.exports = { authMiddleware, isAdmin, isOwner };
+const isUser = asyncHandler(async (req, res, next) => {
+  const { email } = req.user;
+  const OwnerUser = await Users.findOne({ email: email }).populate('role');
+  if (OwnerUser.role.name !== 'user') {
+    throw new Error('You are not an user');
+  } else {
+    next();
+  }
+});
+
+module.exports = { authMiddleware, isAdmin, isOwner, isUser };

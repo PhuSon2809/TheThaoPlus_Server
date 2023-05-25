@@ -8,6 +8,7 @@ const { generateRefreshToken } = require('../config/refreshToken');
 const validateMongoDbId = require('../utils/validateMongodbid');
 
 const Users = require('../models/userModel');
+const Roles = require('../models/roleModel');
 
 const createUser = asyncHandler(async (req, res) => {
   /* 
@@ -25,6 +26,10 @@ const createUser = asyncHandler(async (req, res) => {
   */
   const { email, firstname, lastname, phone, password, gender, YOB, role } =
     req.body;
+  let isValid = await Roles.findById(role);
+  if (!isValid) {
+    throw new Error('Role id is not valid or not found');
+  }
 
   const findUser = await Users.findOne({ email: email });
   if (!findUser) {
@@ -57,6 +62,11 @@ const createOwner = asyncHandler(async (req, res) => {
   */
   const { email, firstname, lastname, phone, password, gender, YOB, role } =
     req.body;
+  let isValid = await Roles.findById(role);
+  if (!isValid) {
+    throw new Error('Role id is not valid or not found');
+  }
+
   const findUser = await Users.findOne({ email: email });
   if (!findUser) {
     //Create a new user
@@ -88,6 +98,11 @@ const createAdmin = asyncHandler(async (req, res) => {
   */
   const { email, firstname, lastname, phone, password, gender, YOB, role } =
     req.body;
+  let isValid = await Roles.findById(role);
+  if (!isValid) {
+    throw new Error('Role id is not valid or not found');
+  }
+
   const findUser = await Users.findOne({ email: email });
   if (!findUser) {
     //Create a new user
@@ -550,7 +565,7 @@ const getSportList = asyncHandler(async (req, res) => {
     const findUser = await Users.findById(_id).populate('sportList');
     res.status(200).json({
       status: 200,
-      OwnerSportList: findUser,
+      OwnerSportList: findUser.sportList,
     });
   } catch (error) {
     throw new Error(error);
@@ -572,7 +587,7 @@ const getSportCenterList = asyncHandler(async (req, res) => {
     const findUser = await Users.findById(_id).populate('sportCenters');
     res.status(200).json({
       status: 200,
-      OwnerSportCenterList: findUser,
+      OwnerSportCenterList: findUser.sportCenters,
     });
   } catch (error) {
     throw new Error(error);

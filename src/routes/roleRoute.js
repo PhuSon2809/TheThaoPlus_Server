@@ -16,10 +16,7 @@ const roleRouter = express.Router();
 
 roleRouter.use(bodyParser.json());
 
-roleRouter
-  .route('/')
-  .post(authMiddleware, isAdmin, createRole)
-  .get(getAllRoles);
+roleRouter.route('/').post(createRole).get(getAllRoles);
 
 roleRouter
   .route('/:id')

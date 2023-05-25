@@ -4,19 +4,51 @@ const Schema = mongoose.Schema;
 
 const bookingSchema = new Schema(
   {
-    name: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    images: [],
-    price: {
+    totalPrice: {
       type: Number,
       required: true,
     },
-    fieldType: {
+    deposit: {
+      type: Number,
+      required: true,
+    },
+    dateBooking: {
       type: String,
-      default: '5 x 5',
+      required: true,
+    },
+    startTime: {
+      type: String,
+      required: true,
+    },
+    hours: {
+      type: String,
+      required: true,
+    },
+    tracking: {
+      type: String,
+      default: 'Booked',
+    },
+    // information user don have account have booking
+    userBooking: {
+      type: String,
+    },
+    phoneBooking: {
+      type: String,
+    },
+    //
+    owner: {
+      type: Schema.Types.ObjectId,
+      ref: 'users',
+      require: true,
+    },
+    sportCenter: {
+      type: Schema.Types.ObjectId,
+      ref: 'sportCenters',
+      require: true,
+    },
+    sportField: {
+      type: Schema.Types.ObjectId,
+      ref: 'sportFields',
     },
     status: {
       type: Boolean,

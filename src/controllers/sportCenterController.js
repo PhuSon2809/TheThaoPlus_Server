@@ -8,6 +8,7 @@ const createSportCenter = asyncHandler(async (req, res) => {
     #swagger.tags = ['Sport Center']
     #swagger.description = Create new sport center - {
       "name": "Sân bóng đá mini Tiến Minh",
+      image: "",
       "address":"Số 141 – đường 339 – Phường Phước Long – Quận 9 – TPHCM",
       "latitude":"25.0359",
       "longtitude":"66.6431",
@@ -16,12 +17,33 @@ const createSportCenter = asyncHandler(async (req, res) => {
       "sportId": "646b3fb2fb8ee6a504e04826"
     }
   */
-  const { _id } = req.user;
-  const { sportId, name, address, latitude, longtitude, openTime, closeTime } =
-    req.body;
+  const imageDefault =
+    'https://firebasestorage.googleapis.com/v0/b/thethaoplus-4d4e2.appspot.com/o/sport_center.png?alt=media&token=50735feb-b144-4ae1-86c9-c47b955ae25a';
 
+  const { _id } = req.user;
+  const {
+    sportId,
+    name,
+    image,
+    address,
+    latitude,
+    longtitude,
+    openTime,
+    closeTime,
+  } = req.body;
+  const newSportCenterBody = {
+    name,
+    image: image ? image : imageDefault,
+    address,
+    latitude,
+    longtitude,
+    openTime,
+    closeTime,
+    owner: _id,
+    sport: sportId,
+  };
   try {
-    const newSportCenter = await SportCenters.create(req.body);
+    const newSportCenter = await SportCenters.create(newSportCenterBody);
     addToOwnerAndSport(_id, sportId, newSportCenter);
     res.status(201).json({
       status: 201,
@@ -69,13 +91,14 @@ const addToOwnerAndSport = async (userId, sportId, newSportCenter) => {
   }
 };
 
+// For user
 const getAllSportCenters = asyncHandler(async (req, res) => {
   /* 
     #swagger.tags = ['Sport Center']
     #swagger.description = "Get all sport center for customers"
   */
   try {
-    const listSportCenter = await SportCenters.find();
+    const listSportCenter = await SportCenters.find().populate('sport');
     res.status(200).json({
       status: 200,
       results: listSportCenter.length,
@@ -98,7 +121,10 @@ const getSportCenter = asyncHandler(async (req, res) => {
   }
 
   try {
-    const getSportCenter = await SportCenters.findById(id);
+    const getSportCenter = await SportCenters.findById(id)
+      .populate('sportFields')
+      .populate('owner')
+      .populate('sport');
     res.status(200).json({
       status: 200,
       getSportCenter: getSportCenter,
@@ -113,6 +139,7 @@ const updateSportCenter = asyncHandler(async (req, res) => {
     #swagger.tags = ['Sport Center']
     #swagger.description = Update sport center by ID - {
       "name": "Sân bóng đá mini Tiến Minh",
+      "image": "",
       "address":"Số 141 – đường 339 – Phường Phước Long – Quận 9 – TPHCM",
       "latitude":"25.0359",
       "longtitude":"66.6431",
@@ -127,12 +154,35 @@ const updateSportCenter = asyncHandler(async (req, res) => {
     throw new Error('Sport Center id is not valid or not found');
   }
 
-  const { sportId, name, address, latitude, longtitude, openTime, closeTime } =
-    req.body;
+  const imageDefault =
+    'https://firebasestorage.googleapis.com/v0/b/thethaoplus-4d4e2.appspot.com/o/sport_center.png?alt=media&token=50735feb-b144-4ae1-86c9-c47b955ae25a';
+
+  const { _id } = req.user;
+  const {
+    sportId,
+    name,
+    image,
+    address,
+    latitude,
+    longtitude,
+    openTime,
+    closeTime,
+  } = req.body;
+  const updateSportCenterBody = {
+    name,
+    image: image ? image : imageDefault,
+    address,
+    latitude,
+    longtitude,
+    openTime,
+    closeTime,
+    owner: _id,
+    sport: sportId,
+  };
   try {
     const updateSportCenter = await SportCenters.findByIdAndUpdate(
       id,
-      req.body,
+      updateSportCenterBody,
       {
         new: true,
       }
@@ -280,7 +330,7 @@ const getSportFieldListByID = asyncHandler(async (req, res) => {
     );
     res.status(200).json({
       status: 200,
-      SportFieldList: findSportCenter,
+      SportFieldList: findSportCenter.sportFields,
     });
   } catch (error) {
     throw new Error(error);

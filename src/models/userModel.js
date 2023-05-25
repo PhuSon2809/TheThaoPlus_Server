@@ -64,6 +64,19 @@ const userSchema = new Schema(
         ref: 'sportCenters',
       },
     ],
+    bookingforUser: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'bookings',
+      },
+    ],
+    // for Owner create booking for customers booking by phone or another
+    bookingforOwner: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'bookings',
+      },
+    ],
     refreshToken: {
       type: String,
     },

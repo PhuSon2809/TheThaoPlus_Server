@@ -12,7 +12,7 @@ const sportCenterSchema = new Schema(
     image: {
       type: String,
       default:
-        'https://firebasestorage.googleapis.com/v0/b/thethaoplus-4d4e2.appspot.com/o/sport.png?alt=media&token=2d2c6703-5121-4242-9841-3b41fa9eaba1',
+        'https://firebasestorage.googleapis.com/v0/b/thethaoplus-4d4e2.appspot.com/o/sport_center.png?alt=media&token=50735feb-b144-4ae1-86c9-c47b955ae25a',
     },
     address: {
       type: String,
@@ -51,6 +51,12 @@ const sportCenterSchema = new Schema(
     totalrating: {
       type: String,
       default: 0,
+    },
+    // for get list booking owner have
+    owner: {
+      type: Schema.Types.ObjectId,
+      ref: 'users',
+      require: true,
     },
     sport: {
       type: Schema.Types.ObjectId,

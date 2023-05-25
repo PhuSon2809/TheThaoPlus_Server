@@ -18,6 +18,11 @@ const sportFieldSchema = new Schema(
       type: String,
       default: '5 x 5',
     },
+    sportCenter: {
+      type: Schema.Types.ObjectId,
+      ref: 'sportCenters',
+      require: true,
+    },
     status: {
       type: Boolean,
       default: true,

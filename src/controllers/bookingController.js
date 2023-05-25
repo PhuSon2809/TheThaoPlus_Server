@@ -1,13 +1,64 @@
 const asyncHandler = require('express-async-handler');
 const SportCenters = require('../models/sportCenterModel');
 const Bookings = require('../models/bookingModel');
+const Users = require('../models/userModel');
+const SportFields = require('../models/sportFieldModel');
 
-const createBooking = asyncHandler(async (req, res) => {
-  const { sportCenterId, booking } = req.body;
+const createBookingForUser = asyncHandler(async (req, res) => {
+  /* 
+    #swagger.tags = ['Booking']
+    #swagger.description = User create new booking - {
+      "name": "Sân bóng đá mini Tiến Minh",
+      "address":"Số 141 – đường 339 – Phường Phước Long – Quận 9 – TPHCM",
+      "latitude":"25.0359",
+      "longtitude":"66.6431",
+      "openTime":"08:00",
+      "closeTime":"22:00",
+      "sportId": "646b3fb2fb8ee6a504e04826"
+    }
+  */
+
+  const { _id } = req.user;
+  const {
+    ownerCenterId: owner,
+    sportCenterId: sportCenter,
+    sportFieldId: sportField,
+    totalPrice,
+    deposit,
+    dateBooking,
+    startTime,
+    hours,
+  } = req.body;
+
+  let isValidUser = await Users.findById(owner);
+  if (!isValidUser) {
+    throw new Error('Owner id is not valid or not found');
+  }
+
+  let isValidSportCenter = await SportCenters.findById(sportCenter);
+  if (!isValidSportCenter) {
+    throw new Error('Sport Center id is not valid or not found');
+  }
+
+  let isValidSportField = await SportFields.findById(sportField);
+  if (!isValidSportField) {
+    throw new Error('Sport Field id is not valid or not found');
+  }
+
+  const newBookingBody = {
+    owner,
+    sportCenter,
+    sportField,
+    totalPrice,
+    deposit,
+    dateBooking,
+    startTime,
+    hours,
+  };
 
   try {
-    const newBooking = await Bookings.create(booking);
-    addToSportCenter(sportCenterId, newBooking);
+    const newBooking = await Bookings.create(newBookingBody);
+    addToUserBooking(_id, newBooking);
     res.status(201).json({
       status: 201,
       message: 'Sport Field created successfully.',
@@ -18,18 +69,18 @@ const createBooking = asyncHandler(async (req, res) => {
   }
 });
 
-const addToSportCenter = async (sportCenterId, newBooking) => {
+const addToUserBooking = async (userId, newBooking) => {
   try {
-    const sportCenter = await SportCenters.findById(sportCenterId);
-    const alreadyBooking = sportCenter.Bookings.find(
+    const user = await Users.findById(userId);
+    const alreadyBooking = user.bookingforUser.find(
       (id) => id.toString() === newBooking._id
     );
 
     if (!alreadyBooking) {
-      await SportCenters.findByIdAndUpdate(
-        sportCenterId,
+      await Users.findByIdAndUpdate(
+        userId,
         {
-          $push: { Bookings: newBooking._id }, //Thêm vào mảng sportCenters
+          $push: { bookingforUser: newBooking._id }, //Thêm vào mảng sportCenters
         },
         { new: true }
       );
@@ -39,13 +90,126 @@ const addToSportCenter = async (sportCenterId, newBooking) => {
   }
 };
 
-const getAllBookings = asyncHandler(async (req, res) => {
+const createBookingForOwner = asyncHandler(async (req, res) => {
+  /* 
+    #swagger.tags = ['Booking']
+    #swagger.description = Owner create new booking - {
+      "name": "Sân bóng đá mini Tiến Minh",
+      "address":"Số 141 – đường 339 – Phường Phước Long – Quận 9 – TPHCM",
+      "latitude":"25.0359",
+      "longtitude":"66.6431",
+      "openTime":"08:00",
+      "closeTime":"22:00",
+      "sportId": "646b3fb2fb8ee6a504e04826"
+    }
+  */
+
+  const { _id } = req.user;
+  const {
+    ownerCenterId: owner,
+    sportCenterId: sportCenter,
+    sportFieldId: sportField,
+    totalPrice,
+    deposit,
+    dateBooking,
+    startTime,
+    hours,
+    userBooking,
+    phoneBooking,
+  } = req.body;
+
+  const newBookingBody = {
+    owner,
+    sportCenter,
+    sportField,
+    totalPrice,
+    deposit,
+    dateBooking,
+    startTime,
+    hours,
+    userBooking,
+    phoneBooking,
+  };
+
   try {
-    const listBookings = await Bookings.find();
+    const newBooking = await Bookings.create(newBookingBody);
+    addToOwnerBooking(_id, newBooking);
+    res.status(201).json({
+      status: 201,
+      message: 'Sport Field created successfully.',
+      newBooking: newBooking,
+    });
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+const addToOwnerBooking = async (userId, newBooking) => {
+  try {
+    const user = await Users.findById(userId);
+    const alreadyBooking = user.bookingforOwner.find(
+      (id) => id.toString() === newBooking._id
+    );
+
+    if (!alreadyBooking) {
+      await Users.findByIdAndUpdate(
+        userId,
+        {
+          $push: { bookingforOwner: newBooking._id }, //Thêm vào mảng sportCenters
+        },
+        { new: true }
+      );
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const getHistoryBooking = asyncHandler(async (req, res) => {
+  /* 
+    #swagger.tags = ['Booking']
+    #swagger.description = "Get history booking for customers"
+  */
+  const { _id } = req.user;
+  let isValid = await Users.findById(_id);
+  if (!isValid) {
+    throw new Error('User id is not valid or not found');
+  }
+  try {
+    const bookingHistory = await Users.findById(_id).populate('bookingforUser');
     res.status(200).json({
       status: 200,
-      results: listBookings.length,
-      listBookings: listBookings,
+      results: bookingHistory.length,
+      bookingHistory: bookingHistory.bookingforUser,
+    });
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+const getAllBookingForOwner = asyncHandler(async (req, res) => {
+  /* 
+    #swagger.tags = ['Booking']
+    #swagger.description = "Get all booking for owner"
+  */
+  const { _id } = req.user;
+  console.log(_id);
+  let isValid = await Users.findById(_id);
+  if (!isValid) {
+    throw new Error('User id is not valid or not found');
+  }
+  try {
+    const bookingOfOwner = await Bookings.find({ owner: _id })
+      .populate(
+        'sportCenter',
+        'name image address latitude longtitude openTime closeTime status'
+      )
+      .populate('sportField', 'name price fieldType status');
+    // .populate('owner', 'firstname  lastname email phone image');
+    res.status(200).json({
+      status: 200,
+      results: bookingOfOwner.length,
+      bookingOfOwner: bookingOfOwner,
     });
   } catch (error) {
     throw new Error(error);
@@ -53,6 +217,10 @@ const getAllBookings = asyncHandler(async (req, res) => {
 });
 
 const getBooking = asyncHandler(async (req, res) => {
+  /* 
+    #swagger.tags = ['Booking']
+    #swagger.description = "Get one booking - detail booking"
+  */
   const { id } = req.params;
   let isValid = await Bookings.findById(id);
   if (!isValid) {
@@ -60,7 +228,12 @@ const getBooking = asyncHandler(async (req, res) => {
   }
 
   try {
-    const getBooking = await Bookings.findById(id);
+    const getBooking = await Bookings.findById(id)
+      .populate(
+        'sportCenter',
+        'name image address latitude longtitude openTime closeTime status'
+      )
+      .populate('sportField', 'name images price fieldType status');
     res.status(200).json({
       status: 200,
       getBooking: getBooking,
@@ -71,6 +244,18 @@ const getBooking = asyncHandler(async (req, res) => {
 });
 
 const updateBooking = asyncHandler(async (req, res) => {
+  /* 
+    #swagger.tags = ['Booking']
+    #swagger.description = Update sport center by ID - {
+      "name": "Sân bóng đá mini Tiến Minh",
+      "address":"Số 141 – đường 339 – Phường Phước Long – Quận 9 – TPHCM",
+      "latitude":"25.0359",
+      "longtitude":"66.6431",
+      "openTime":"08:00",
+      "closeTime":"22:00",
+      "sportId": "646b3fb2fb8ee6a504e04826"
+    }
+  */
   const { id } = req.params;
   let isValid = await Bookings.findById(id);
   if (!isValid) {
@@ -91,7 +276,13 @@ const updateBooking = asyncHandler(async (req, res) => {
   }
 });
 
-const blockBooking = asyncHandler(async (req, res) => {
+//for user
+const cancelBooking = asyncHandler(async (req, res) => {
+  /* 
+    #swagger.tags = ['Booking']
+    #swagger.description = "Update sport center status by ID - Cancel"
+  */
+
   const { id } = req.params;
   let isValid = await Bookings.findById(id);
   if (!isValid) {
@@ -106,82 +297,49 @@ const blockBooking = asyncHandler(async (req, res) => {
     );
     res.status(202).json({
       status: 202,
-      message: 'Sport Field Blocked.',
+      message: 'Booking canceled.',
     });
   } catch (error) {
     throw new Error(error);
   }
 });
 
-const unBlockBooking = asyncHandler(async (req, res) => {
+const updateTrackingBooking = asyncHandler(async (req, res) => {
+  /* 
+    #swagger.tags = ['Booking']
+    #swagger.description = "Update sport center status by ID - Unblock sport center"
+  */
+
   const { id } = req.params;
+  const { tracking } = req.body;
   let isValid = await Bookings.findById(id);
   if (!isValid) {
     throw new Error('Sport id is not valid or not found');
   }
 
   try {
-    const block = await Bookings.findByIdAndUpdate(
+    const booking = await Bookings.findByIdAndUpdate(
       id,
-      { status: true },
+      { tracking: tracking },
       { new: true }
     );
     res.status(202).json({
       status: 202,
-      message: 'Sport Field Unblocked.',
+      message: 'Update tracking successfull.',
+      booking: booking,
     });
   } catch (error) {
     throw new Error(error);
   }
 });
-
-const deleteBooking = asyncHandler(async (req, res) => {
-  const { id, sportCenterId } = req.params;
-  let isValid = await Bookings.findById(id);
-  if (!isValid) {
-    throw new Error('Sport id is not valid or not found');
-  }
-
-  try {
-    const deleteBooking = await Bookings.findByIdAndDelete(id);
-    removeToSportCenter(sportCenterId, id);
-    res.status(200).json({
-      status: 200,
-      message: 'Sport Field deleted successfully.',
-      deleteBooking: deleteBooking,
-    });
-  } catch (error) {
-    throw new Error(error);
-  }
-});
-
-const removeToSportCenter = async (sportCenterId, BookingId) => {
-  try {
-    const sportCenter = await SportCenters.findById(sportCenterId);
-    const alreadyBooking = sportCenter.Bookings.find(
-      (id) => id.toString() === BookingId
-    );
-
-    if (alreadyBooking) {
-      await SportCenters.findByIdAndUpdate(
-        sportCenterId,
-        {
-          $pull: { Bookings: BookingId }, //Thêm vào mảng sportCenters
-        },
-        { new: true }
-      );
-    }
-  } catch (error) {
-    console.log(error);
-  }
-};
 
 module.exports = {
-  createBooking,
-  getAllBookings,
+  createBookingForUser,
+  createBookingForOwner,
+  getHistoryBooking,
+  getAllBookingForOwner,
   getBooking,
   updateBooking,
-  deleteBooking,
-  blockBooking,
-  unBlockBooking,
+  cancelBooking,
+  updateTrackingBooking,
 };
