@@ -27,10 +27,6 @@ const doc = {
       url: `http://localhost:${port}`,
       description: 'local server',
     },
-    {
-      url: `https://the-thao-plus-server.vercel.app`,
-      description: 'deploy server',
-    },
   ],
   components: {
     securitySchemes: {

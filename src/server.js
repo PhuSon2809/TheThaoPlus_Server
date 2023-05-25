@@ -14,11 +14,6 @@ connectDatabase();
 
 const app = express();
 
-// Page Home
-app.get('/', (req, res) => {
-  res.send('SERVER ON');
-});
-
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
