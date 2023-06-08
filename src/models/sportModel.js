@@ -18,6 +18,10 @@ const sportSchema = new Schema(
       type: Boolean,
       default: true,
     },
+    add: {
+      type: Boolean,
+      default: false,
+    },
     sportCenters: [
       {
         type: Schema.Types.ObjectId,

@@ -6,7 +6,7 @@ const SportFields = require('../models/sportFieldModel');
 
 const createBookingForUser = asyncHandler(async (req, res) => {
   /* 
-    #swagger.tags = ['Booking']
+    #swagger.tags = ['Payment']
     #swagger.description = User create new booking - {
       "name": "Sân bóng đá mini Tiến Minh",
       "address":"Số 141 – đường 339 – Phường Phước Long – Quận 9 – TPHCM",
@@ -25,8 +25,9 @@ const createBookingForUser = asyncHandler(async (req, res) => {
     sportFieldId: sportField,
     totalPrice,
     deposit,
-    start,
-    end,
+    dateBooking,
+    startTime,
+    hours,
   } = req.body;
 
   let isValidUser = await Users.findById(owner);
@@ -50,8 +51,9 @@ const createBookingForUser = asyncHandler(async (req, res) => {
     sportField,
     totalPrice,
     deposit,
-    start,
-    end,
+    dateBooking,
+    startTime,
+    hours,
   };
 
   try {
@@ -90,7 +92,7 @@ const addToUserBooking = async (userId, newBooking) => {
 
 const createBookingForOwner = asyncHandler(async (req, res) => {
   /* 
-    #swagger.tags = ['Booking']
+    #swagger.tags = ['Payment']
     #swagger.description = Owner create new booking - {
       "name": "Sân bóng đá mini Tiến Minh",
       "address":"Số 141 – đường 339 – Phường Phước Long – Quận 9 – TPHCM",
@@ -104,24 +106,27 @@ const createBookingForOwner = asyncHandler(async (req, res) => {
 
   const { _id } = req.user;
   const {
+    ownerCenterId: owner,
     sportCenterId: sportCenter,
     sportFieldId: sportField,
     totalPrice,
     deposit,
-    start,
-    end,
+    dateBooking,
+    startTime,
+    hours,
     userBooking,
     phoneBooking,
   } = req.body;
 
   const newBookingBody = {
-    owner: _id,
+    owner,
     sportCenter,
     sportField,
     totalPrice,
     deposit,
-    start,
-    end,
+    dateBooking,
+    startTime,
+    hours,
     userBooking,
     phoneBooking,
   };
@@ -135,10 +140,7 @@ const createBookingForOwner = asyncHandler(async (req, res) => {
       newBooking: newBooking,
     });
   } catch (error) {
-    res.status(400).json({
-      status: 400,
-      message: 'Bad request.',
-    });
+    throw new Error(error);
   }
 });
 
@@ -165,7 +167,7 @@ const addToOwnerBooking = async (userId, newBooking) => {
 
 const getHistoryBooking = asyncHandler(async (req, res) => {
   /* 
-    #swagger.tags = ['Booking']
+    #swagger.tags = ['Payment']
     #swagger.description = "Get history booking for customers"
   */
   const { _id } = req.user;
@@ -187,7 +189,7 @@ const getHistoryBooking = asyncHandler(async (req, res) => {
 
 const getAllBookingForOwner = asyncHandler(async (req, res) => {
   /* 
-    #swagger.tags = ['Booking']
+    #swagger.tags = ['Payment']
     #swagger.description = "Get all booking for owner"
   */
   const { _id } = req.user;
@@ -203,22 +205,11 @@ const getAllBookingForOwner = asyncHandler(async (req, res) => {
         'name image address latitude longtitude openTime closeTime status'
       )
       .populate('sportField', 'name price fieldType status');
-    const bookingCalendar = await Bookings.find(
-      { owner: _id },
-      'start end sportField sportCenter'
-    )
-      .populate(
-        'sportCenter',
-        'name image address latitude longtitude openTime closeTime status'
-      )
-      .populate('sportField', 'name price fieldType status');
-    console.log(bookingCalendar);
     // .populate('owner', 'firstname  lastname email phone image');
     res.status(200).json({
       status: 200,
       results: bookingOfOwner.length,
       bookingOfOwner: bookingOfOwner,
-      bookings: bookingCalendar,
     });
   } catch (error) {
     throw new Error(error);
@@ -227,7 +218,7 @@ const getAllBookingForOwner = asyncHandler(async (req, res) => {
 
 const getBooking = asyncHandler(async (req, res) => {
   /* 
-    #swagger.tags = ['Booking']
+    #swagger.tags = ['Payment']
     #swagger.description = "Get one booking - detail booking"
   */
   const { id } = req.params;
@@ -254,7 +245,7 @@ const getBooking = asyncHandler(async (req, res) => {
 
 const updateBooking = asyncHandler(async (req, res) => {
   /* 
-    #swagger.tags = ['Booking']
+    #swagger.tags = ['Payment']
     #swagger.description = Update sport center by ID - {
       "name": "Sân bóng đá mini Tiến Minh",
       "address":"Số 141 – đường 339 – Phường Phước Long – Quận 9 – TPHCM",
@@ -288,7 +279,7 @@ const updateBooking = asyncHandler(async (req, res) => {
 //for user
 const cancelBooking = asyncHandler(async (req, res) => {
   /* 
-    #swagger.tags = ['Booking']
+    #swagger.tags = ['Payment']
     #swagger.description = "Update sport center status by ID - Cancel"
   */
 
@@ -315,7 +306,7 @@ const cancelBooking = asyncHandler(async (req, res) => {
 
 const updateTrackingBooking = asyncHandler(async (req, res) => {
   /* 
-    #swagger.tags = ['Booking']
+    #swagger.tags = ['Payment']
     #swagger.description = "Update sport center status by ID - Unblock sport center"
   */
 

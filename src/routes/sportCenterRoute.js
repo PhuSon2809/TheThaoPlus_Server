@@ -11,6 +11,7 @@ const {
   unBlockSportCenter,
   deleteSportCenter,
   getSportFieldListByID,
+  getAllSportCenterForOwner,
 } = require('../controllers/sportCenterController');
 
 const sportCenterRouter = express.Router();
@@ -20,6 +21,10 @@ sportCenterRouter.use(bodyParser.json());
 sportCenterRouter.route('/').post(authMiddleware, isOwner, createSportCenter);
 
 sportCenterRouter.route('/').get(authMiddleware, getAllSportCenters);
+
+sportCenterRouter
+  .route('/sport-center-of-owner')
+  .get(authMiddleware, isOwner, getAllSportCenterForOwner);
 
 sportCenterRouter
   .route('/get-sport-field-list/:sportCenterId')

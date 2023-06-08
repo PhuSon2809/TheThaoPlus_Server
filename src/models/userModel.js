@@ -33,13 +33,13 @@ const userSchema = new Schema(
       required: true,
     },
     YOB: {
-      type: Number,
+      type: String,
       required: true,
     },
     image: {
       type: String,
       default:
-        'https://firebasestorage.googleapis.com/v0/b/thethaoplus-4d4e2.appspot.com/o/user.png?alt=media&token=e4bb46bd-2ec7-4d81-a876-6c1d96a35a20',
+        'https://firebasestorage.googleapis.com/v0/b/thethaoplus-4d4e2.appspot.com/o/avatar_user.jpg?alt=media&token=1d60a80b-a10e-43ac-8965-fce3aaf689ae',
     },
     role: {
       type: Schema.Types.ObjectId,

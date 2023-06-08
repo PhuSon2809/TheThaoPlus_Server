@@ -12,21 +12,29 @@ const bookingSchema = new Schema(
       type: Number,
       required: true,
     },
-    dateBooking: {
-      type: String,
-      required: true,
+    start: {
+      type: Date,
+      required: [true, 'Please Insert The Start of your event'],
+      min: [new Date(), "can't be before now!!"],
     },
-    startTime: {
-      type: String,
-      required: true,
-    },
-    hours: {
-      type: String,
-      required: true,
+    end: {
+      type: Date,
+      min: [
+        function () {
+          const date = new Date(this.start);
+          const validDate = new Date(date.setHours(date.getHours() + 1));
+          return validDate;
+        },
+        'Event End must be at least one hour a head of event time',
+      ],
+      default: function () {
+        const date = new Date(this.start);
+        return date.setDate(date.getHours() + 1, date.getMinutes() + 30);
+      },
     },
     tracking: {
       type: String,
-      default: 'Booked',
+      default: 'Pending',
     },
     // information user don have account have booking
     userBooking: {
@@ -49,6 +57,10 @@ const bookingSchema = new Schema(
     sportField: {
       type: Schema.Types.ObjectId,
       ref: 'sportFields',
+    },
+    payments: {
+      type: Boolean,
+      default: false,
     },
     status: {
       type: Boolean,

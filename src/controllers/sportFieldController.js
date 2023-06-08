@@ -16,12 +16,13 @@ const createSportField = asyncHandler(async (req, res) => {
       "price": 200000
     }
   */
-  const { sportCenterId, name, images, price } = req.body;
+  const { sportCenterId, name, images, price, fieldType } = req.body;
 
   const sportField = {
     name,
     images,
     price,
+    fieldType,
   };
 
   try {
@@ -33,7 +34,10 @@ const createSportField = asyncHandler(async (req, res) => {
       newSportField: newSportField,
     });
   } catch (error) {
-    throw new Error(error);
+    res.status(400).json({
+      status: 400,
+      message: 'Sport Field created fail.',
+    });
   }
 });
 
@@ -111,7 +115,7 @@ const updateSportField = asyncHandler(async (req, res) => {
     }
   */
   const { id } = req.params;
-  const { name, images, price } = req.body;
+  const { name, images, price, fieldType } = req.body;
   let isValid = await SportFields.findById(id);
   if (!isValid) {
     throw new Error('Sport id is not valid or not found');
@@ -139,7 +143,10 @@ const blockSportField = asyncHandler(async (req, res) => {
   const { id } = req.params;
   let isValid = await SportFields.findById(id);
   if (!isValid) {
-    throw new Error('Sport id is not valid or not found');
+    res.status(404).json({
+      status: 404,
+      message: 'Sport field id is not valid or not found',
+    });
   }
 
   try {
@@ -153,7 +160,10 @@ const blockSportField = asyncHandler(async (req, res) => {
       message: 'Sport Field Blocked.',
     });
   } catch (error) {
-    throw new Error(error);
+    res.status(400).json({
+      status: 400,
+      message: error,
+    });
   }
 });
 

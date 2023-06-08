@@ -18,6 +18,10 @@ const sportCenterSchema = new Schema(
       type: String,
       required: true,
     },
+    description: {
+      type: String,
+      required: true,
+    },
     latitude: {
       type: String,
       required: true,

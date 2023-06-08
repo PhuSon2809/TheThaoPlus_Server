@@ -9,6 +9,7 @@ const validateMongoDbId = require('../utils/validateMongodbid');
 
 const Users = require('../models/userModel');
 const Roles = require('../models/roleModel');
+const { sendEmail } = require('./emailController');
 
 const createUser = asyncHandler(async (req, res) => {
   /* 
@@ -79,7 +80,10 @@ const createOwner = asyncHandler(async (req, res) => {
       },
     });
   } else {
-    throw new Error('User already exists!');
+    res.status(400).json({
+      status: 400,
+      message: 'User already exists!',
+    });
   }
 });
 
@@ -146,7 +150,10 @@ const login = asyncHandler(async (req, res) => {
       token: generateToken(findUser?._id),
     });
   } else {
-    throw new Error('Invalid credentials!');
+    res.status(400).json({
+      status: 400,
+      message: 'Invalid credentials!',
+    });
   }
 });
 
@@ -159,7 +166,12 @@ const loginOwner = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   //check id user exits or not
   const findOwner = await Users.findOne({ email: email }).populate('role');
-  if (findOwner.role.name !== 'owner') throw new Error('Not Authorized');
+  if (findOwner.role.name !== 'owner') {
+    res.status(403).json({
+      status: 403,
+      message: 'Not Authorized!',
+    });
+  }
   if (findOwner && (await findOwner.isPasswordMatched(password))) {
     const refreshToken = await generateRefreshToken(findOwner?._id);
 
@@ -178,7 +190,10 @@ const loginOwner = asyncHandler(async (req, res) => {
       token: generateToken(findOwner?._id),
     });
   } else {
-    throw new Error('Invalid credentials!');
+    res.status(400).json({
+      status: 400,
+      message: 'Invalid credentials!',
+    });
   }
 });
 
@@ -210,7 +225,10 @@ const loginAdmin = asyncHandler(async (req, res) => {
       token: generateToken(findAdmin?._id),
     });
   } else {
-    throw new Error('Invalid credentials!');
+    res.status(400).json({
+      status: 400,
+      message: 'Invalid credentials!',
+    });
   }
 });
 
@@ -245,10 +263,11 @@ const handlerRefreshToken = asyncHandler(async (req, res) => {
 const logout = asyncHandler(async (req, res) => {
   /* 
     #swagger.tags = ['Auth']
-    #swagger.description = "Logout user"
+    #swagger.description = "Logout account"
   */
   const cookie = req.cookies;
-  if (!cookie.refreshToken) {
+  console.log(cookie);
+  if (!cookie?.refreshToken) {
     throw new Error('No refresh token in cookie!');
   }
   const refreshToken = cookie.refreshToken;
@@ -267,7 +286,7 @@ const logout = asyncHandler(async (req, res) => {
     httpOnly: true,
     secure: true,
   });
-  return res.sendStatus(204); //forbidden
+  res.sendStatus(204); //forbidden
 });
 
 //Get all users
@@ -565,7 +584,7 @@ const getSportList = asyncHandler(async (req, res) => {
     const findUser = await Users.findById(_id).populate('sportList');
     res.status(200).json({
       status: 200,
-      OwnerSportList: findUser.sportList,
+      ownerSportList: findUser.sportList,
     });
   } catch (error) {
     throw new Error(error);

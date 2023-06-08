@@ -176,12 +176,18 @@ const addToSportOwnerList = asyncHandler(async (req, res) => {
 
   let isValidUser = await Users.findById(_id);
   if (!isValidUser) {
-    throw new Error('User id is not valid or not found');
+    res.status(400).json({
+      status: 400,
+      message: 'User id is not valid or not found!',
+    });
   }
 
   let isValidSport = await Sports.findById(sportId);
   if (!isValidSport) {
-    throw new Error('Sport id is not valid or not found');
+    res.status(400).json({
+      status: 400,
+      message: 'Sport id is not valid or not found!',
+    });
   }
 
   try {
@@ -195,9 +201,17 @@ const addToSportOwnerList = asyncHandler(async (req, res) => {
         },
         { new: true }
       );
+      await Sports.findByIdAndUpdate(
+        sportId,
+        {
+          add: false,
+        },
+        { new: true }
+      );
       res.status(200).json({
         status: 200,
         user: user,
+        messages: 'Remove sport successfully',
       });
     } else {
       let user = await Users.findByIdAndUpdate(
@@ -207,13 +221,24 @@ const addToSportOwnerList = asyncHandler(async (req, res) => {
         },
         { new: true }
       );
+      await Sports.findByIdAndUpdate(
+        sportId,
+        {
+          add: true,
+        },
+        { new: true }
+      );
       res.status(200).json({
         status: 200,
         user: user,
+        messages: 'Add sport successfully',
       });
     }
   } catch (error) {
-    throw new Error(error);
+    res.status(400).json({
+      status: 400,
+      error: error,
+    });
   }
 });
 

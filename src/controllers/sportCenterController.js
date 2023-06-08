@@ -26,6 +26,7 @@ const createSportCenter = asyncHandler(async (req, res) => {
     name,
     image,
     address,
+    description,
     latitude,
     longtitude,
     openTime,
@@ -35,6 +36,7 @@ const createSportCenter = asyncHandler(async (req, res) => {
     name,
     image: image ? image : imageDefault,
     address,
+    description,
     latitude,
     longtitude,
     openTime,
@@ -51,7 +53,10 @@ const createSportCenter = asyncHandler(async (req, res) => {
       newSportCenter: newSportCenter,
     });
   } catch (error) {
-    throw new Error(error);
+    res.status(400).json({
+      status: 400,
+      message: 'Created sport center fail!',
+    });
   }
 });
 
@@ -103,6 +108,31 @@ const getAllSportCenters = asyncHandler(async (req, res) => {
       status: 200,
       results: listSportCenter.length,
       listSportCenter: listSportCenter,
+    });
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+const getAllSportCenterForOwner = asyncHandler(async (req, res) => {
+  /* 
+    #swagger.tags = ['Sport Center']
+    #swagger.description = "Get all sport center for owner by id"
+  */
+  const { _id } = req.user;
+  console.log(_id);
+  let isValid = await Users.findById(_id);
+  if (!isValid) {
+    throw new Error('User id is not valid or not found');
+  }
+  try {
+    const sportCenterOfOwner = await SportCenters.find({ owner: _id }).populate(
+      'sport'
+    );
+    res.status(200).json({
+      status: 200,
+      results: sportCenterOfOwner.length,
+      sportCenterOfOwner: sportCenterOfOwner,
     });
   } catch (error) {
     throw new Error(error);
@@ -273,7 +303,10 @@ const deleteSportCenter = asyncHandler(async (req, res) => {
       deleteSportCenter: deleteSportCenter,
     });
   } catch (error) {
-    throw new Error(error);
+    res.status(400).json({
+      status: 400,
+      message: 'Delete sport center fail.',
+    });
   }
 });
 
@@ -340,6 +373,7 @@ const getSportFieldListByID = asyncHandler(async (req, res) => {
 module.exports = {
   createSportCenter,
   getAllSportCenters,
+  getAllSportCenterForOwner,
   getSportCenter,
   updateSportCenter,
   deleteSportCenter,
